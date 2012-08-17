@@ -21,7 +21,10 @@ from xml.etree import ElementTree
 from string import split
 from urllib2 import Request, urlopen, URLError, HTTPError
 from lib.utilities import Debug
+from xml.sax.saxutils import unescape
 import math
+import glob
+
 
 class EnumStatus:
     NOPLAY='noplay'
@@ -49,7 +52,7 @@ class PchRequestor:
     def parseResponse(self, response):
         oPchStatus = PchStatus()
         try:
-            response = response.replace('&','')
+            response = unescape(response)
             oXml = ElementTree.XML(response) 
             if oXml.tag == "theDavidBox": # theDavidBox should be the root
                 if oXml.find("returnValue").text == '0':
@@ -65,6 +68,12 @@ class PchRequestor:
                         oPchStatus.totalChapter = int(oXml.find("response/totalchapter").text)
                         if oPchStatus.totalChapter!= 0:
                             oPchStatus.percent = int(math.ceil(float(oPchStatus.currentChapter) / float(oPchStatus.totalChapter) * 100.0)) # approximation because chapters are differents
+                    elif (self.mediaType == "DVD"):
+                        t = glob.glob("/isolink/*.iso")
+                        t = unicode(t).replace("['","")
+                        oPchStatus.fullPath = unicode(t).replace("']","")
+                        oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]
+                        
                     else:
                         oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]
                         if oPchStatus.totalTime!=0:
