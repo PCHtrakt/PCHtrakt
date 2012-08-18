@@ -17,11 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pchtrakt.  If not, see <http://www.gnu.org/licenses/>.
 
-from xml.etree import ElementTree 
+from xml.etree import ElementTree
 from string import split
 from urllib2 import Request, urlopen, URLError, HTTPError
 from lib.utilities import Debug
-import math
+from xml.sax.saxutils import unescape
+import math, glob
+
 
 class EnumStatus:
     NOPLAY='noplay'
@@ -30,7 +32,7 @@ class EnumStatus:
     LOAD='buffering'
     STOP='stop'
     UNKNOWN='unknown'
-    
+
 class PchStatus:
     def __init__(self):
         self.status=EnumStatus.NOPLAY
@@ -42,42 +44,58 @@ class PchStatus:
         self.mediaType = ""
         self.currentChapter = 0 # For Blu-ray Disc only
         self.totalChapter = 0 # For Blu-ray Disc only
-        self.error = None 
-        
+        self.error = None
+
 class PchRequestor:
-    
+
     def parseResponse(self, response):
         oPchStatus = PchStatus()
         try:
-            response = response.replace('&','')
-            oXml = ElementTree.XML(response) 
+            response = unescape(response)
+            oXml = ElementTree.XML(response)
             if oXml.tag == "theDavidBox": # theDavidBox should be the root
-                if oXml.find("returnValue").text == '0':
+                if oXml.find("returnValue").text == '0' and int(oXml.find("response/totalTime").text) > 90:#Added total time check to avoid scrobble while playing adverts/trailers
+                    oPchStatus.totalTime = int(oXml.find("response/totalTime").text)
                     oPchStatus.status = oXml.find("response/currentStatus").text
                     oPchStatus.fullPath = unicode(oXml.find("response/fullPath").text)
                     oPchStatus.currentTime = int(oXml.find("response/currentTime").text)
-                    oPchStatus.totalTime = int(oXml.find("response/totalTime").text)
-                    if oXml.find("response/mediatype")!= None:
-                        self.mediaType = oXml.find("response/mediatype").text
-                    if(self.mediaType == "BD"): # Blu-ray Disc are not handle like .mkv or .avi files
-                        oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][1]) # add a / on last position when ISO
+                    if oXml.find("response/totalchapter")!= None:
                         oPchStatus.currentChapter = int(oXml.find("response/currentchapter").text)
                         oPchStatus.totalChapter = int(oXml.find("response/totalchapter").text)
-                        if oPchStatus.totalChapter!= 0:
-                            oPchStatus.percent = int(math.ceil(float(oPchStatus.currentChapter) / float(oPchStatus.totalChapter) * 100.0)) # approximation because chapters are differents
+                    if oXml.find("response/mediatype")!= None:
+                        self.mediaType = oXml.find("response/mediatype").text
+                        if (oPchStatus.fullPath == "/iso"):#Change path if iso file
+							newpath = glob.glob("/isolink/*.iso")
+							newpath = unicode(newpath)[2:-2]
+							oPchStatus.fullPath = newpath
+                        if(self.mediaType == "BD"): # Blu-ray Disc are not handle like .mkv or .avi files
+							oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][1]) # add a / on last position when ISO
+							if oPchStatus.totalTime!=0:
+								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentChapter) / float(oPchStatus.totalChapter) * 100.0)) # approximation because chapters are differents
+                        elif (self.mediaType == "DVD") and (oPchStatus.fullPath.split(".")[-1] == "iso"):
+							oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][0])
+							if oPchStatus.totalTime!=0:
+								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
+							if oPchStatus.totalChapter!=0:
+								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentChapter) / float(oPchStatus.totalChapter) * 100.0)) # approximation because chapters are differents
+                        elif (self.mediaType == "DVD") and (oPchStatus.fullPath.split(".")[-1] <> "iso"):
+							oPchStatus.fullPath = oPchStatus.fullPath[:-1]+".DVD"#Add .DVD extension for later use or will just make .watched file
+							oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][0])
+							if oPchStatus.totalTime!=0:
+								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
+                        else:
+							oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]
+							if oPchStatus.totalTime!=0:
+								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
                     else:
-                        oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]
-                        if oPchStatus.totalTime!=0:
-                            oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
-                else:
-                    oPchStatus.status=EnumStatus.NOPLAY
+						oPchStatus.status=EnumStatus.NOPLAY
             else:
-                oPchStatus.status = EnumStatus.UNKNOWN    
+                oPchStatus.status = EnumStatus.UNKNOWN
         except ElementTree.ParseError, e:
             oPchStatus.error = e
-            oPchStatus.status = EnumStatus.UNKNOWN        
+            oPchStatus.status = EnumStatus.UNKNOWN
         return oPchStatus
-        
+
     def getStatus(self,ip,timeout=5.0):
         oPchStatus = PchStatus()
         try:
@@ -86,11 +104,9 @@ class PchRequestor:
         except HTTPError, e:
             oPchStatus.error = e
             oPchStatus.status = EnumStatus.UNKNOWN
-            #Debug("Fail to contact server : " + str(e.reason))        
+            #Debug("Fail to contact server : " + str(e.reason))
         except URLError, e:
             oPchStatus.error = e
             oPchStatus.status = EnumStatus.UNKNOWN
-            #Debug("Fail to contact server : " + str(e.reason))            
+            #Debug("Fail to contact server : " + str(e.reason))
         return oPchStatus
-        
-    
