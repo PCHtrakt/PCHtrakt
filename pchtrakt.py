@@ -25,6 +25,8 @@
 #     - some classes from Sick Beard (http://sickbeard.com/)
 
 import sys
+reload(sys)
+sys.setdefaultencoding("utf8")
 import getopt
 import pchtrakt
 import os
