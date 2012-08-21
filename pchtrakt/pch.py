@@ -51,7 +51,7 @@ class PchRequestor:
     def parseResponse(self, response):
         oPchStatus = PchStatus()
         try:
-            response = unescape(response)
+            response = unescape(response).decode( "latin-1", "replace" ).encode( "utf-8", "replace" )
             oXml = ElementTree.XML(response)
             if oXml.tag == "theDavidBox": # theDavidBox should be the root
                 if oXml.find("returnValue").text == '0' and int(oXml.find("response/totalTime").text) > 90:#Added total time check to avoid scrobble while playing adverts/trailers
