@@ -25,6 +25,8 @@
 #     - some classes from Sick Beard (http://sickbeard.com/)
 
 import sys
+reload(sys)
+sys.setdefaultencoding("utf8")
 import getopt
 import pchtrakt
 import os
@@ -50,12 +52,11 @@ from urllib import quote
 
 class PchTraktException(Exception):
     pass
-
 tvdb = tvdb_api.Tvdb()
 
 pchtrakt.oPchRequestor = PchRequestor()
 pchtrakt.mediaparser = mp.MediaParser()
-class media(): 
+class media():
     def __str__(self):
         if isinstance(self.parsedInfo, mp.MediaParserResultTVShow):
             msg = u'TV Show : {0} - Season:{1} - Episode:{2} ' \
@@ -115,7 +116,7 @@ def getParams():
             finally:
                 sys.exit()
 
-                
+
 def daemonize():
     """
     Fork off as a daemon
@@ -154,6 +155,8 @@ def doWork():
     if pchtrakt.lastPath != myMedia.oStatus.fullPath:
         pchtrakt.StopTrying = 0
         myMedia.parsedInfo = None
+        with open('cache.json','w') as f:
+            json.dump(pchtrakt.dictSerie, f, separators=(',',':'), indent=4)
     if YamjWatched == True:
         try:
             watchedFileCreation(myMedia)
@@ -162,7 +165,7 @@ def doWork():
             Debug('::: {0} :::'.format(e))
             pchtrakt.logger.error(e)
     if not pchtrakt.StopTrying:
-        if myMedia.oStatus.status not in   [EnumStatus.NOPLAY, 
+        if myMedia.oStatus.status not in   [EnumStatus.NOPLAY,
                                             EnumStatus.UNKNOWN,
                                             EnumStatus.PAUSE]:
             pchtrakt.allowedPauseTime = TraktMaxPauseTime
@@ -172,7 +175,7 @@ def doWork():
                                             myMedia.oStatus.fileName)
                 Debug(myMedia.__str__())
                 videoStatusHandle(myMedia)
-        elif (myMedia.oStatus.status == EnumStatus.PAUSE 
+        elif (myMedia.oStatus.status == EnumStatus.PAUSE
             and pchtrakt.allowedPauseTime > 0):
             pchtrakt.allowedPauseTime -= sleepTime
             Debug(myMedia.__str__())
@@ -198,12 +201,17 @@ def stopTrying():
         pchtrakt.lastPath = myMedia.oStatus.fullPath
     except Exception as e:
         pass
-        
+
 
 if __name__ == '__main__':
     getParams()
     if pchtrakt.DAEMON:
         daemonize()
+    if os.path.isfile('cache.json'):
+        with open('cache.json','r+') as f:
+            pchtrakt.dictSerie = json.load(f)
+    else:
+        pchtrakt.dictSerie = {}
     pchtrakt.logger.info('Pchtrakt START')
     while not pchtrakt.stop:
         try:
