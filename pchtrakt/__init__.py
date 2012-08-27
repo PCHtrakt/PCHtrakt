@@ -75,8 +75,8 @@ def newConfig():
         config.set('YAMJ', 'ignored_category', '')
     if not config.has_option('YAMJ','path'):
         config.set('YAMJ', 'path', '')
-    if not config.has_option('YAMJ','updatexmlwatched'):
-        config.set('YAMJ', 'updatexmlwatched', '')
+    if not config.has_option('YAMJ','update_xml_watched'):
+        config.set('YAMJ', 'update_xml_watched', '')
         
     with open(config_file, 'w') as configfile:
         config.write(configfile)
