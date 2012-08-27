@@ -328,7 +328,7 @@ def watchedFileCreation(myMedia):
 				if pchtrakt.isMovie:
 					xmlpath = updatexmlwatched + "Other*.xml"
 					for name in glob.glob(xmlpath):
-						if myMedia.oStatus.fileName in open(name).read():#gets xml file name as name
+						if myMedia.oStatus.fileName[:-4] in open(name).read():#gets xml file name as name
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('movies/movie'):
 								if movie.find('baseFilenameBase').text == myMedia.oStatus.fileName[:-4]:#for  content in penContents:
@@ -343,10 +343,11 @@ def watchedFileCreation(myMedia):
 										pchtrakt.logger.info(txt)
 										break
 				elif pchtrakt.isTvShow:
-					a = re.split("(.*[Ss]\\d\\d[Ee]\\d\\d.)", myMedia.oStatus.fileName)#
+					a = re.split("([-|.]*[Ss]\\d\\d[Ee]\\d\\d.)", myMedia.oStatus.fileName)#
 					ep_name = a[2][:-4].replace(".", " ")
 					ep_name = ep_name.replace("- ", "")
-					season_xml = a[1][:-3]
+					season_xml = a[0][:-3]
+					season_xml = season_xml.replace(" - ", "")
 					ep_no = '01'
 					fileinfo = updatexmlwatched + "Set_" + ep_name + "*.xml"
 					for name in glob.glob(fileinfo):
