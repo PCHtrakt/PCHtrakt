@@ -310,7 +310,7 @@ def isGenreIgnored(genres):
     return False
 
 def watchedFileCreation(myMedia):
-    if myMedia.oStatus.percent > 90:
+    if myMedia.oStatus.percent > 90 and isKeywordIgnored(myMedia.oStatus.fileName) == False:
         path = myMedia.oStatus.fileName
         if YamJWatchedVithVideo:
             path = myMedia.oStatus.fullPath
@@ -362,7 +362,7 @@ def watchedFileCreation(myMedia):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode])and movie.get('season') == str(myMedia.parsedInfo.season_number):
+								if movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
