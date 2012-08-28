@@ -281,9 +281,9 @@ def isIgnored(myMedia):
 
 def isKeywordIgnored(title):
     if ignored_keywords[0] != '':
-        msg = title
-        Debug(msg)
-        pchtrakt.logger.info(msg)
+
+
+
         for keyword in ignored_keywords:
             if keyword.lower() in title.lower():
                 msg = u'This file contains a ignored keyword'
@@ -314,12 +314,17 @@ def watchedFileCreation(myMedia):
         path = myMedia.oStatus.fileName
         if YamJWatchedVithVideo:
             path = myMedia.oStatus.fullPath
+			#Remember that .DVD extension
+            if (path.split(".")[-1] == "DVD"):
+                path = path[:-4]
             if not OnPCH:
                 path = path.replace('/opt/sybhttpd/localhost.drives/','')
                 path = path.split('/', 2)[2]
                 path = '{0}{1}'.format(YamjWatchedPath, path)
         else:
             path = '{0}{1}'.format(YamjWatchedPath, path)
+            if (path.split(".")[-1] == "DVD"):
+                path = path[:-4]
         path = '{0}.watched'.format(path)
         if not isfile(path):
             f = open(path, 'w')

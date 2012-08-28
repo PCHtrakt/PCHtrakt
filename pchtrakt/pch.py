@@ -84,7 +84,7 @@ class PchRequestor:
 							if oPchStatus.totalTime!=0:
 								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
                         else:
-							oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0].encode('utf8')
+							oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]#.encode('utf8')
 							if oPchStatus.totalTime!=0:
 								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
                     else:
