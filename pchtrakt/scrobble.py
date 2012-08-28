@@ -338,28 +338,28 @@ def watchedFileCreation(myMedia):
 										bak_name = name[:-4]+'.bak'
 										tree.write(bak_name)
 										os.rename(bak_name, name)
-										txt = name + ' has been modified as watched for ' + myMedia.oStatus.fileName
+										txt = name.replace(updatexmlwatched, '') + ' has been modified as watched for ' + myMedia.oStatus.fileName
 										Debug(txt)
 										pchtrakt.logger.info(txt)
 										break
 				elif pchtrakt.isTvShow:
-					a = re.split("([-|.]*[Ss]\\d\\d[Ee]\\d\\d.)", myMedia.oStatus.fileName)#
-					ep_name = a[2][:-4].replace(".", " ")
-					ep_name = ep_name.replace("- ", "")
-					season_xml = a[0][:-3]
-					season_xml = season_xml.replace(" - ", "")
+					a = re.split("([-|.]*[Ss]\\d\\d[Ee]\\d\\d.)", myMedia.oStatus.fileName)
+					ep_name = a[2][:-4].replace(".", " ").replace("- ", "")
+					#ep_name = ep_name.replace("- ", "")
+					season_xml = a[0][:-3].replace(".", " ").replace(" - ", "")
+					f_size = str(os.path.getsize(myMedia.oStatus.fullPath))
 					ep_no = '01'
-					fileinfo = updatexmlwatched + "Set_" + ep_name + "*.xml"
+					fileinfo = updatexmlwatched + "Set_" + season_xml + "*.xml"
 					for name in glob.glob(fileinfo):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('title') == ep_name:
+								if movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode])and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
 									os.rename(bak_name, name)
-									txt = name + ' has been modified as watched for ' + myMedia.oStatus.fileName
+									txt = name.replace(updatexmlwatched, '') + ' has been modified as watched for ' + myMedia.oStatus.fileName
 									Debug(txt)
 									pchtrakt.logger.info(txt)
 									break
@@ -368,12 +368,12 @@ def watchedFileCreation(myMedia):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('title') == ep_name:
+								if movie.get('size') == f_size and movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
 									os.rename(bak_name, name)
-									txt = name + ' has been modified as watched for ' + myMedia.oStatus.fileName
+									txt = name.replace(updatexmlwatched, '') + ' has been modified as watched for ' + myMedia.oStatus.fileName
 									Debug(txt)
 									pchtrakt.logger.info(txt)
 									break
@@ -393,7 +393,7 @@ def watchedFileCreation(myMedia):
 									#bak_name = name[:-4]+'.bak'
 									#tree.write(bak_name)
 									#os.rename(bak_name, name)
-									#txt = name + ' has been modified as watched for ' + myMedia.oStatus.fileName
+									#txt = name.replace(updatexmlwatched, '') + ' has been modified as watched for ' + myMedia.oStatus.fileName
 									#Debug(txt)
 									#pchtrakt.logger.info(txt)
 									#break
