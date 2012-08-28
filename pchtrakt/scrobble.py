@@ -281,8 +281,11 @@ def isIgnored(myMedia):
 
 def isKeywordIgnored(title):
     if ignored_keywords[0] != '':
+        msg = title
+        Debug(msg)
+        pchtrakt.logger.info(msg)
         for keyword in ignored_keywords:
-            if keyword in title:
+            if keyword.lower() in title.lower():
                 msg = u'This file contains a ignored keyword'
                 Debug(msg)
                 pchtrakt.logger.info(msg)
