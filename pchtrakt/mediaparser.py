@@ -18,7 +18,7 @@
 # along with pchtrakt.  If not, see <http://www.gnu.org/licenses/>.
 
 from os.path import basename, isfile
-from urllib import quote
+from urllib import quote_plus
 from urllib2 import urlopen, HTTPError, URLError
 import json
 from lib import parser
@@ -61,17 +61,16 @@ class MediaParserResultMovie(MediaParserResult):
         self.year = year
 
         ImdbAPIurl = ('http://www.imdbapi.com/?t={0}&y={1}'.format(
-                                        quote(self.name),
+                                        quote_plus(self.name),
                                         self.year))
-
         try:
             oResponse = urlopen(ImdbAPIurl,None,5)
             myMovieJson = json.loads(oResponse.read())
             self.id = myMovieJson['imdbID']
-        except URLError, HTTPError:
+        except:#Errors out if left like URLError, HTTPError:
             ImdbAPIurl = ('http://www.deanclatworthy.com/' \
                           'imdb/?q={0}&year={1}'.format(
-                                quote(self.name),
+                                quote_plus(self.name),
                                 self.year))
 
             try:
@@ -89,37 +88,19 @@ class MediaParser():
     def __init__(self):
         self.TVShowParser = parser.NameParser()
         self.MovieParser = MovieParser()
-        
+
     def parse(self, file_name):
         try:
-            parsedResult = self.TVShowParser.parse(file_name)
-            oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
-            return oResultTVShow
+			parsedResult = self.TVShowParser.parse(file_name)
+			oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
+			return oResultTVShow
         except parser.InvalidNameException as e:
-            oMovie = self.MovieParser.parse(file_name)
-            return oMovie
-        raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
+			oMovie = self.MovieParser.parse(file_name)
+			return oMovie
+			raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
 
 
-    #def parse(self, file_name):
-        #if file_name[:2].isdigit() == True or file_name[:3].isdigit() == False:
-			#try:
-				#oMovie = self.MovieParser.parse(file_name)
-				#return oMovie
-			#except:# parser.InvalidNameException as e:
-				#parsedResult = self.TVShowParser.parse(file_name)
-				#oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
-				#return oResultTVShow
-				#raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
-        #else:
-			#try:
-				#parsedResult = self.TVShowParser.parse(file_name)
-				#oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
-				#return oResultTVShow
-			#except:# parser.InvalidNameException as e:
-				#oMovie = self.MovieParser.parse(file_name)
-				#return oMovie
-				#raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
-		
+
+
 
 
