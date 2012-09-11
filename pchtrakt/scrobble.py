@@ -330,6 +330,9 @@ def watchedFileCreation(myMedia):
             Debug(msg)
             pchtrakt.logger.info(msg)
             if  updatexmlwatched !="":
+				msg = 'Starting xml update in '.format(updatexmlwatched)
+				Debug(msg)
+				pchtrakt.logger.info(msg)
 				if pchtrakt.isMovie:
 					xmlpath = updatexmlwatched + "Other*.xml"
 					for name in glob.glob(xmlpath):
