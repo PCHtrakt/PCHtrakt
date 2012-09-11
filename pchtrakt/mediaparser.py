@@ -91,13 +91,24 @@ class MediaParser():
         self.MovieParser = MovieParser()
 
     def parse(self, file_name):
-        try:
-            parsedResult = self.TVShowParser.parse(file_name)
-            oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
-            return oResultTVShow
-        except parser.InvalidNameException as e:
-            oMovie = self.MovieParser.parse(file_name)
-            return oMovie
-        raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
+        if file_name[:2].isdigit():
+			if file_name[:3].isdigit():
+				try:
+					parsedResult = self.TVShowParser.parse(file_name)
+					oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
+					return oResultTVShow
+				except parser.InvalidNameException as e:
+					oMovie = self.MovieParser.parse(file_name)
+					return oMovie
+				raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
+			else:
+				try:
+					oMovie = self.MovieParser.parse(file_name)
+					return oMovie
+				except parser.InvalidNameException as e:
+					parsedResult = self.TVShowParser.parse(file_name)
+					oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
+					return oResultTVShow
+
 
 

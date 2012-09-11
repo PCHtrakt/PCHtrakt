@@ -228,17 +228,14 @@ def videoStatusHandleTVSeries(myMedia):
         showStarted(myMedia)
 
 def videoStatusHandle(myMedia):
-    if pchtrakt.lastPath != myMedia.oStatus.fullPath:
-        pchtrakt.Ignored = isIgnored(myMedia)
-    if not pchtrakt.Ignored:
-        if isinstance(myMedia.parsedInfo,mp.MediaParserResultTVShow):
-            if TraktScrobbleTvShow or BetaSeriesScrobbleTvShow:
-                videoStatusHandleTVSeries(myMedia)
-            pchtrakt.isTvShow = 1
-        elif isinstance(myMedia.parsedInfo,mp.MediaParserResultMovie):
-            if TraktScrobbleMovie:
-                videoStatusHandleMovie(myMedia)
-            pchtrakt.isMovie = 1
+    if isinstance(myMedia.parsedInfo,mp.MediaParserResultTVShow):
+        if TraktScrobbleTvShow or BetaSeriesScrobbleTvShow:
+            videoStatusHandleTVSeries(myMedia)
+        pchtrakt.isTvShow = 1
+    elif isinstance(myMedia.parsedInfo,mp.MediaParserResultMovie):
+        if TraktScrobbleMovie:
+           videoStatusHandleMovie(myMedia)
+        pchtrakt.isMovie = 1
     else:
         pchtrakt.StopTrying = 1
     pchtrakt.lastPath = myMedia.oStatus.fullPath
@@ -286,7 +283,7 @@ def isKeywordIgnored(title):
 
         for keyword in ignored_keywords:
             if keyword.lower() in title.lower():
-                msg = u'This file contains a ignored keyword'
+                msg = u'This file contains an ignored keyword. Waiting for next file to start.'
                 Debug(msg)
                 pchtrakt.logger.info(msg)
                 return True
@@ -310,7 +307,7 @@ def isGenreIgnored(genres):
     return False
 
 def watchedFileCreation(myMedia):
-    if myMedia.oStatus.percent > 90 and isKeywordIgnored(myMedia.oStatus.fileName) == False:
+    if myMedia.oStatus.percent > 90:
         path = myMedia.oStatus.fileName
         if YamJWatchedVithVideo:
             path = myMedia.oStatus.fullPath
@@ -353,7 +350,6 @@ def watchedFileCreation(myMedia):
 				elif pchtrakt.isTvShow:
 					a = re.split("([-|.]*[Ss]\\d\\d[Ee]\\d\\d.)", myMedia.oStatus.fileName)
 					ep_name = a[2][:-4].replace(".", " ").replace("- ", "")
-					#ep_name = ep_name.replace("- ", "")
 					season_xml = a[0][:-3].replace(".", " ").replace(" - ", "")
 					f_size = str(os.path.getsize(myMedia.oStatus.fullPath))
 					ep_no = '01'
@@ -362,7 +358,7 @@ def watchedFileCreation(myMedia):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('size') == f_size:#if movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
+								if movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
@@ -376,7 +372,7 @@ def watchedFileCreation(myMedia):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('size') == f_size:# and movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
+								if movie.get('size') == f_size and movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
