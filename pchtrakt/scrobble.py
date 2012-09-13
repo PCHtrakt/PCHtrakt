@@ -330,7 +330,8 @@ def watchedFileCreation(myMedia):
             Debug(msg)
             pchtrakt.logger.info(msg)
             if  updatexmlwatched !="":
-				msg = 'Starting xml update in '.format(updatexmlwatched)
+				epno = str(myMedia.parsedInfo.episode_numbers).replace('[', '').replace(']', '')
+				msg = 'Starting xml update in '+updatexmlwatched
 				Debug(msg)
 				pchtrakt.logger.info(msg)
 				if pchtrakt.isMovie:
@@ -361,7 +362,7 @@ def watchedFileCreation(myMedia):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
+								if movie.get('firstPart') == epno and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
@@ -375,7 +376,7 @@ def watchedFileCreation(myMedia):
 						if myMedia.oStatus.fileName in open(name).read():
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
-								if movie.get('size') == f_size and movie.get('firstPart') == str(myMedia.parsedInfo.episode_numbers[myMedia.idxEpisode]) and movie.get('season') == str(myMedia.parsedInfo.season_number):
+								if movie.get('size') == f_size and movie.get('firstPart') == epno and movie.get('season') == str(myMedia.parsedInfo.season_number):
 									movie.set('watched', 'true')
 									bak_name = name[:-4]+'.bak'
 									tree.write(bak_name)
