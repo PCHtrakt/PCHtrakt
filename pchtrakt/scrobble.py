@@ -330,7 +330,6 @@ def watchedFileCreation(myMedia):
             Debug(msg)
             pchtrakt.logger.info(msg)
             if  updatexmlwatched !="":
-				epno = str(myMedia.parsedInfo.episode_numbers).replace('[', '').replace(']', '')
 				msg = 'Starting xml update in '+updatexmlwatched
 				Debug(msg)
 				pchtrakt.logger.info(msg)
@@ -352,6 +351,7 @@ def watchedFileCreation(myMedia):
 										pchtrakt.logger.info(txt)
 										break
 				elif pchtrakt.isTvShow:
+					epno = str(myMedia.parsedInfo.episode_numbers).replace('[', '').replace(']', '')
 					a = re.split("([-|.]*[Ss]\\d\\d[Ee]\\d\\d.)", myMedia.oStatus.fileName)
 					ep_name = a[2][:-4].replace(".", " ").replace("- ", "")
 					season_xml = a[0][:-3].replace(".", " ").replace(" - ", "")
