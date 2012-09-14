@@ -253,7 +253,9 @@ def isIgnored(myMedia):
     if not ignored and ignored_repertory[0] != '':
         for el in myMedia.oStatus.fullPath.split('/'):
             if el <> '' and el in ignored_repertory:
-                msg = 'This video is in a ignored repertory: {0}'.format(el)
+                msg = 'This video is in a ignored repertory: {0}'.format(el) + ' Waiting for next file to start.'
+                Debug(msg)
+                pchtrakt.logger.info(msg)
                 ignored = True
                 break
 
@@ -278,9 +280,6 @@ def isIgnored(myMedia):
 
 def isKeywordIgnored(title):
     if ignored_keywords[0] != '':
-
-
-
         for keyword in ignored_keywords:
             if keyword.lower() in title.lower():
                 msg = u'This file contains an ignored keyword. Waiting for next file to start.'
