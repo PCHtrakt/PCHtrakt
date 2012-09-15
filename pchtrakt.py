@@ -52,12 +52,10 @@ from urllib import quote
 
 class PchTraktException(Exception):
     pass
-
 tvdb = tvdb_api.Tvdb()
-
 pchtrakt.oPchRequestor = PchRequestor()
 pchtrakt.mediaparser = mp.MediaParser()
-class media(): 
+class media():
     def __str__(self):
         if isinstance(self.parsedInfo, mp.MediaParserResultTVShow):
             msg = u'TV Show : {0} - Season:{1} - Episode:{2} ' \
@@ -117,7 +115,7 @@ def getParams():
             finally:
                 sys.exit()
 
-                
+
 def daemonize():
     """
     Fork off as a daemon
@@ -152,9 +150,15 @@ def daemonize():
 
 def doWork():
     myMedia.ScrobResult = 0
+    pchtrakt.StopTrying = 0
     myMedia.oStatus = pchtrakt.oPchRequestor.getStatus(ipPch, 5)
-    if pchtrakt.lastPath != myMedia.oStatus.fullPath:
-        pchtrakt.StopTrying = 0
+    if pchtrakt.lastPath != myMedia.oStatus.fullPath and myMedia.oStatus.status == EnumStatus.PLAY:
+        if isIgnored(myMedia) == True:
+			while myMedia.oStatus.status == EnumStatus.PLAY:
+				sleep(sleepTime)
+				myMedia.oStatus = pchtrakt.oPchRequestor.getStatus(ipPch, 5)
+				pchtrakt.StopTrying = 1
+    if pchtrakt.lastPath != myMedia.oStatus.fullPath and pchtrakt.StopTrying == 0:
         myMedia.parsedInfo = None
         with open('cache.json','w') as f:
             json.dump(pchtrakt.dictSerie, f, separators=(',',':'), indent=4)
@@ -166,7 +170,7 @@ def doWork():
             Debug('::: {0} :::'.format(e))
             pchtrakt.logger.error(e)
     if not pchtrakt.StopTrying:
-        if myMedia.oStatus.status not in   [EnumStatus.NOPLAY, 
+        if myMedia.oStatus.status not in   [EnumStatus.NOPLAY,
                                             EnumStatus.UNKNOWN,
                                             EnumStatus.PAUSE]:
             pchtrakt.allowedPauseTime = TraktMaxPauseTime
@@ -176,7 +180,7 @@ def doWork():
                                             myMedia.oStatus.fileName)
                 Debug(myMedia.__str__())
                 videoStatusHandle(myMedia)
-        elif (myMedia.oStatus.status == EnumStatus.PAUSE 
+        elif (myMedia.oStatus.status == EnumStatus.PAUSE
             and pchtrakt.allowedPauseTime > 0):
             pchtrakt.allowedPauseTime -= sleepTime
             Debug(myMedia.__str__())
@@ -202,7 +206,7 @@ def stopTrying():
         pchtrakt.lastPath = myMedia.oStatus.fullPath
     except Exception as e:
         pass
-        
+
 
 if __name__ == '__main__':
     getParams()
@@ -215,49 +219,49 @@ if __name__ == '__main__':
         pchtrakt.dictSerie = {}
     pchtrakt.logger.info('Pchtrakt START')
     while not pchtrakt.stop:
-        try:
-            try:
-                doWork()
-                sleep(sleepTime)
-            except (KeyboardInterrupt, SystemExit):
-                Debug(':::Stopping pchtrakt:::')
-                pchtrakt.stop = 1
-                videoStopped()
-            except tvdb_exceptions.tvdb_shownotfound as e:
-                stopTrying()
-                msg = (':::TheTvDB - Show not found ' \
-                       '{0} :::'.format(pchtrakt.lastPath))
-                Debug(msg)
-                pchtrakt.logger.warning(msg)
-                sleep(sleepTime)
-            except utils.AuthenticationTraktError as e:
-                stopTrying()
-                Debug(':::{0}::'.format(e))
-                pchtrakt.logger.error(e)
-                sleep(sleepTime)
-            except utils.MaxScrobbleError as e:
-                stopTrying()
-                Debug(':::{0}:::'.format(e))
-                pchtrakt.logger.error(e)
-                sleep(sleepTime)
-            except MovieResultNotFound as e:
-                stopTrying()
-                msg = ':::Movie not found - {0}:::'.format(e.file_name)
-                Debug(msg)
-                pchtrakt.logger.error(msg)
-                sleep(sleepTime)
-            except PchTraktException as e:
-                stopTrying()
-                msg = ':::PchTraktException - {0}:::'.format(e)
-                Debug(msg)
-                pchtrakt.logger.error(msg)
-                sleep(sleepTime)
-        except Exception as e:
-           stopTrying()
-           Debug(u'::: {0} :::'.format(pchtrakt.lastPath))
-           Debug(u'::: {0} :::'.format(e))
-           pchtrakt.logger.exception('This should never happend! Please contact me with the error if you read this')
-           pchtrakt.logger.exception(pchtrakt.lastPath)
-           pchtrakt.logger.exception(e)
-           sleep(sleepTime)
+		try:
+			try:
+				doWork()
+				sleep(sleepTime)
+			except (KeyboardInterrupt, SystemExit):
+				Debug(':::Stopping pchtrakt:::')
+				pchtrakt.stop = 1
+				videoStopped()
+			except tvdb_exceptions.tvdb_shownotfound as e:
+				stopTrying()
+				msg = (':::TheTvDB - Show not found ' \
+				'{0} :::'.format(pchtrakt.lastPath))
+				Debug(msg)
+				pchtrakt.logger.warning(msg)
+				sleep(sleepTime)
+			except utils.AuthenticationTraktError as e:
+				stopTrying()
+				Debug(':::{0}::'.format(e))
+				pchtrakt.logger.error(e)
+				sleep(sleepTime)
+			except utils.MaxScrobbleError as e:
+				stopTrying()
+				Debug(':::{0}:::'.format(e))
+				pchtrakt.logger.error(e)
+				sleep(sleepTime)
+			except MovieResultNotFound as e:
+				stopTrying()
+				msg = ':::Movie not found - {0}:::'.format(e.file_name)
+				Debug(msg)
+				pchtrakt.logger.error(msg)
+				sleep(sleepTime)
+			except PchTraktException as e:
+				stopTrying()
+				msg = ':::PchTraktException - {0}:::'.format(e)
+				Debug(msg)
+				pchtrakt.logger.error(msg)
+				sleep(sleepTime)
+		except Exception as e:
+			stopTrying()
+			Debug(u'::: {0} :::'.format(pchtrakt.lastPath))
+			Debug(u'::: {0} :::'.format(e))
+			pchtrakt.logger.exception('This should never happend! Please contact me with the error if you read this')
+			pchtrakt.logger.exception(pchtrakt.lastPath)
+			pchtrakt.logger.exception(e)
+			sleep(sleepTime)
     pchtrakt.logger.info('Pchtrakt STOP')

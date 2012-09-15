@@ -18,7 +18,7 @@
 # along with pchtrakt.  If not, see <http://www.gnu.org/licenses/>.
 
 from os.path import basename, isfile
-from urllib import quote
+from urllib import quote_plus
 from urllib2 import urlopen, HTTPError, URLError
 import json
 from lib import parser
@@ -32,7 +32,7 @@ tvdb = tvdb_api.Tvdb()
 class MediaParserResult():
     def __init__(self,file_name):
         self.file_name = file_name
-        
+
 class MediaParserResultTVShow(MediaParserResult):
     def __init__(self,file_name,name,season_number,episode_numbers):
         self.file_name = file_name
@@ -53,25 +53,24 @@ class MediaParserResultTVShow(MediaParserResult):
 
             with open('cache.json','w') as f:
                 json.dump(cacheSerie.dictSerie, f, separators=(',',':'), indent=4)
-        
+
 class MediaParserResultMovie(MediaParserResult):
     def __init__(self,file_name,name,year,imdbid):
         self.file_name = file_name
         self.name = name
         self.year = year
-        
-        ImdbAPIurl = ('http://www.imdbapi.com/?t={0}&y={1}'.format(
-                                        quote(self.name),
-                                        self.year))
 
+        ImdbAPIurl = ('http://www.imdbapi.com/?t={0}&y={1}'.format(
+                                        quote_plus(self.name),
+                                        self.year))
         try:
             oResponse = urlopen(ImdbAPIurl,None,5)
             myMovieJson = json.loads(oResponse.read())
             self.id = myMovieJson['imdbID']
-        except URLError, HTTPError:
+        except:#Errors out if left like URLError, HTTPError:
             ImdbAPIurl = ('http://www.deanclatworthy.com/' \
                           'imdb/?q={0}&year={1}'.format(
-                                quote(self.name),
+                                quote_plus(self.name),
                                 self.year))
 
             try:
@@ -80,25 +79,28 @@ class MediaParserResultMovie(MediaParserResult):
                 self.id = myMovieJson['imdbid']
             except URLError, HTTPError:
                 pass
-        
+
 class MediaParserUnableToParse(Exception):
     def __init__(self, file_name):
         self.file_name = file_name
-    
+
 class MediaParser():
     def __init__(self):
         self.TVShowParser = parser.NameParser()
         self.MovieParser = MovieParser()
-        
+
     def parse(self, file_name):
         try:
-            parsedResult = self.TVShowParser.parse(file_name)
-            oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
-            return oResultTVShow
+			parsedResult = self.TVShowParser.parse(file_name)
+			oResultTVShow = MediaParserResultTVShow(file_name,parsedResult.series_name,parsedResult.season_number,parsedResult.episode_numbers)
+			return oResultTVShow
         except parser.InvalidNameException as e:
-            oMovie = self.MovieParser.parse(file_name)
-            return oMovie
-        raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
-        
-    
-        
+			oMovie = self.MovieParser.parse(file_name)
+			return oMovie
+			raise MediaParserUnableToParse("Unable to parse the filename and detecte an movie or a tv show")
+
+
+
+
+
+

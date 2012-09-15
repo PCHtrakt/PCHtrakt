@@ -79,12 +79,25 @@ class PchRequestor:
 							if oPchStatus.totalChapter!=0:
 								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentChapter) / float(oPchStatus.totalChapter) * 100.0)) # approximation because chapters are differents
                         elif (self.mediaType == "DVD") and (oPchStatus.fullPath.split(".")[-1] <> "iso"):
+<<<<<<< HEAD
 							oPchStatus.fullPath = oPchStatus.fullPath[:-1]+".DVD"#Add .DVD extension for later use or will just make .watched file
 							oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][0])
 							if oPchStatus.totalTime!=0:
 								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
                         else:
 							oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]
+=======
+							if oPchStatus.fullPath[-1:] == "/":
+								oPchStatus.fullPath = oPchStatus.fullPath[:-1]+".DVD"#Add .DVD extension for later use or will just make .watched file
+								oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][0])
+							else:
+								oPchStatus.fullPath += ".DVD"
+								oPchStatus.fileName = unicode(oPchStatus.fullPath.split('/')[::-1][0])
+							if oPchStatus.totalTime!=0:
+								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
+                        else:
+							oPchStatus.fileName = oPchStatus.fullPath.split('/')[::-1][0]#.encode('utf8')
+>>>>>>> origin/dvp
 							if oPchStatus.totalTime!=0:
 								oPchStatus.percent = int(math.ceil(float(oPchStatus.currentTime) / float(oPchStatus.totalTime) * 100.0))
                     else:
@@ -104,9 +117,20 @@ class PchRequestor:
         except HTTPError, e:
             oPchStatus.error = e
             oPchStatus.status = EnumStatus.UNKNOWN
+<<<<<<< HEAD
             #Debug("Fail to contact server : " + str(e.reason))
         except URLError, e:
             oPchStatus.error = e
             oPchStatus.status = EnumStatus.UNKNOWN
             #Debug("Fail to contact server : " + str(e.reason))
         return oPchStatus
+=======
+            #Debug("Fail to contact server : " + unicode(e.reason))
+        except URLError, e:
+            oPchStatus.error = e
+            oPchStatus.status = EnumStatus.UNKNOWN
+            #Debug("Fail to contact server : " + unicode(e.reason))
+        return oPchStatus
+
+
+>>>>>>> origin/dvp
