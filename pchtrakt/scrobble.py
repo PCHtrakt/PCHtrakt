@@ -358,13 +358,7 @@ def watchedFileCreation(myMedia):
 					ep_no = '01'
 					fileinfo = updatexmlwatched + "Set_" + season_xml + "*.xml"
 					for name in glob.glob(fileinfo):
-						txt = 'Scanning File ' + name
-						Debug(txt)
-						pchtrakt.logger.info(txt)
 						if myMedia.oStatus.fileName in open(name).read():
-							txt = 'Match found in ' + name + ', Changing status to watched'
-							Debug(txt)
-							pchtrakt.logger.info(txt)
 							tree = ElementTree.parse(name)
 							for movie in tree.findall('*/movie/files/file'):
 								if movie.get('firstPart') == epno and movie.get('season') == str(myMedia.parsedInfo.season_number):
