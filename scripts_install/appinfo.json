@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 {
     appinfo_format = "1",
     name = "pchtrakt",
@@ -8,6 +9,8 @@
     crontab="0 */2 * * * pyhton #PATH#/update.py"
 }
 =======
+=======
+>>>>>>> origin/dvp
 {
     appinfo_format = "1",
     name = "pchtrakt",
@@ -16,4 +19,7 @@
     daemon_script = "daemon.sh",
     crontab="0 */2 * * * pyhton #PATH#/update.py"
 }
+<<<<<<< HEAD
+>>>>>>> origin/dvp
+=======
 >>>>>>> origin/dvp
